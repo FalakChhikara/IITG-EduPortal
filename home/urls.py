@@ -1,3 +1,4 @@
+
 from django.urls import path, re_path
 from django.conf.urls.static import static
 from django.conf import settings
@@ -18,7 +19,8 @@ urlpatterns = [
     path('(?P<book_title>[\w.@+-]+)/(?P<req_id>[\w.@+-]+)/(?P<req_user>[\w.@+-]+)/(?P<username>[\w.@+-]+)/updatef/', views.updatef,name='updatef'),
     path('notifications/',views.notifications,name='notifications'),
     path('notifications/delete/(?P<n_id>[\w.@+-]+)/',views.n_delete,name='n_delete'),
-
+    path('chatrooms/',views.allchat,name='allchat'),
+    path('chatroom/(?P<self>[\w.@+-]+)/(?P<other>[\w.@+-]+)/',views.chatroom,name='chatroom'),
     
     
     path('addcourse/',views.addcourse,name='addcourse'),

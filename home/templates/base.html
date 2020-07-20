@@ -48,6 +48,9 @@
 				<li class="nav-item {% block request %}{% endblock %}">
 					<a class="nav-link" href="/stuff/requests">Requests</a>
 				</li>
+				<li class="nav-item {% block chatroom %}{% endblock %}">
+					<a class="nav-link" href="/stuff/chatrooms">chatroom</a>
+				</li>
 				<li class="nav-item {% block logout %}{% endblock %}">
 					<a class="nav-link" href="{% url 'accounts:logout' %}">Logout</a>
 				</li>
@@ -129,7 +132,7 @@
 <div class="container">
 <div class="row">
 <div class="col-md-12 text-center">
-<p>Copyright KamengTeam © 2019. All rights reserved.</p>
+<p>Copyright KamengTeam © {% now "Y" %}. All rights reserved.</p>
 </div>
 </div>
 </div>

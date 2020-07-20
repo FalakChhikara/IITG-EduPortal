@@ -82,9 +82,10 @@ def login(request):
         session_id = user['idToken']  # use localId also
 
         # uid is name of session
-        request.session['uid'] = str(session_id)
+        request.session['uid'] = str(session_id) # use this in other func -> idtoken = request.session['uid'] line 39 of home/views
+        # youtube.com/watch?v=bq0AszeDZf4&list=PLhPDb5zFmGR2VfXiN2y-1V0qdRik7Cc0K&index=4   time - 18:00 min
 
-        localid = user['localId']
+        localid = user['localId']  # user contain complete information , do print(user)
         print(localid)
         # print( database.child("users").get().val(),1)
         user1 = database.child("users").child(localid).get().val()

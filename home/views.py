@@ -3,6 +3,7 @@ import pyrebase
 from django.contrib import auth
 from functions import *
 from decorators import *
+import operator
 
 
 config = {
@@ -34,8 +35,9 @@ def add_notes(request):
         notes_name = request.POST.get('notes_name')
         url = request.POST.get('url')
         upload = request.FILES.get('url')
-        print(upload)
+        # print(upload)
         try:
+            # snatchout id from sessions
             idtoken = request.session['uid']
             a = authe.get_account_info(idtoken)
             a = a['users']
@@ -45,17 +47,18 @@ def add_notes(request):
         except:
             return render(request, "accounts/login.html")
 
-        storage = firebase.storage()
+        storage = firebase.storage()            # important
 
         storage_path = "notes/" + notes_name + ".pdf"
-        print(storage_path)
+        # print(storage_path)
         storage.child(storage_path).put(upload, idtoken)
         url = storage.child(storage_path).get_url(idtoken)
 
+
+
         username = database.child("users").child(a).child("details").child("username").get(idtoken).val()
         tags = database.child("users").child(a).child("details").child("admin").get(idtoken).val()
-
-        # print(username)
+#         # print(username)
         data = {
             "tags": tags,
             "url": url,
@@ -69,10 +72,10 @@ def add_notes(request):
 
 @login_required
 def view_notes(request):
-    notes = database.child('Notes').shallow().get().val()
-    print(notes)
+    notes = database.child('Notes').shallow().get().val() #returns dictionary => convert to list
+    # print(notes)
     list_notes = [*notes]
-    print(list_notes)
+    # print(list_notes)
     tags = []
     urls = []
     usernames = []
@@ -87,9 +90,9 @@ def view_notes(request):
         approve = database.child('Notes').child(i).child('approved').get().val()
         approved.append(approve)
 
-    print(tags)
-    print(urls)
-    print(usernames)
+    # print(tags)
+    # print(urls)
+    # print(usernames)
     combine_list = zip(list_notes,tags,usernames,urls,approved)
     return render(request, "home/display_notes.html", {'combine_list':combine_list})
 
@@ -99,11 +102,11 @@ def add_club(request):
             return render(request, "home/add_club.html")
 
         else:
-            print("falak")
+            # print("falak")
             url = request.POST.get('url')
-            print(url)
+            # print(url)
             upload = request.FILES.get('url')
-            print(upload)
+            # print(upload)
 
             try:
                 idtoken = request.session['uid']
@@ -123,7 +126,7 @@ def add_club(request):
 
             username = database.child("users").child(a).child("details").child("username").get(idtoken).val()
             tags = database.child("users").child(a).child("details").child("admin").get(idtoken).val()
-            # print(username)
+#             # print(username)
             data = {
                 "url": url,
                 "username": username,
@@ -135,9 +138,9 @@ def add_club(request):
 @login_required
 def display_clubs(request):
     clubs = database.child('Clubs').shallow().get().val()
-    print(clubs)
+    # print(clubs)
     list_clubs = [*clubs]
-    print(list_clubs)
+    # print(list_clubs)
     urls = []
     usernames = []
     approved = []
@@ -149,8 +152,8 @@ def display_clubs(request):
         approve = database.child('Notes').child(i).child('approved').get().val()
         approved.append(approve)
 
-    print(urls)
-    print(usernames)
+    # print(urls)
+    # print(usernames)
     combine_list = zip(list_clubs,usernames,urls,approved)
     return render(request, "home/display_clubs.html", {'combine_list':combine_list})
 @login_required
@@ -180,7 +183,7 @@ def addbook(request):
         username = database.child("users").child(a).child("details").child("username").get(idtoken).val()
         email = database.child("users").child(a).child("details").child("email").get(idtoken).val()
         tags = database.child("users").child(a).child("details").child("admin").get(idtoken).val()
-        print(tags)
+        # print(tags)
         data={
             "tags":tags,
             "username":username,
@@ -220,12 +223,12 @@ def displaybook(request):
         approve = database.child('books').child(i).child('approved').get().val()
         approved.append(approve)
 
-    print(approved)
+    # print(approved)
     combine_list = zip(list_books,tags,usernames,status,emails,approved,urls)
     return render(request, "home/display_books.html", {'combine_list':combine_list})
 
 
-j=1
+
 
 
 @login_required
@@ -239,6 +242,13 @@ def requestbook(request,username,book_title,status):
     except:
         return render(request, "accounts/signup.html")
 
+    j = database.child('j').get().val()
+    if j is None:
+        database.child('j').set(0, idtoken)
+    j = database.child('j').get().val()
+    j = j + 1
+    database.child('j').set(j, idtoken)
+
 
     req_user = database.child("users").child(a).child("details").child("username").get(idtoken).val()
     data = {
@@ -247,8 +257,6 @@ def requestbook(request,username,book_title,status):
         "status":status,
         "book_title":book_title,
     }
-    global j
-    j = j + 1
     database.child("requests").child(j).set(data, idtoken)
 
     return redirect('home:displaybook')
@@ -259,12 +267,12 @@ def addcourse(request):
         return render(request, "home/addcourse.html")
 
     else:
-        print("falak")
+        # print("falak")
         course_name = request.POST.get('course_name')
         video_name = request.POST.get('video_name')
         tags = request.POST.get('tags')
         upload=request.FILES.get('url')
-        print(upload)
+        # print(upload)
 
 
         try:
@@ -284,7 +292,7 @@ def addcourse(request):
         url = storage.child(storage_path).get_url(idtoken)
 
         username = database.child("users").child(a).child("details").child("username").get(idtoken).val()
-        #print(username)
+#         #print(username)
         data = {
             "tags": tags,
             "url": url,
@@ -296,16 +304,16 @@ def addcourse(request):
 @login_required
 def course_list(request):
     courses = database.child('course').shallow().get().val()
-    print(courses)
+#     # print(courses)
     list_courses = [*courses]
-    print(list_courses)
+#     # print(list_courses)
     link_lists = []
     for i in list_courses:
         videos = database.child('course').child(i).shallow().get().val()
         videos1=[*videos]
         link = "/stuff/"+i+"/"+videos1[0]
         link_lists.append(link)
-    print(link_lists)
+#     # print(link_lists)
     combine_list = zip(list_courses,link_lists)
     return render(request, "home/display_courses.html", {'combine_list':combine_list})
 @login_required
@@ -338,7 +346,7 @@ def addexternalcourse(request):
         return render(request, "home/addexternalcourses.html")
 
     else:
-        print("falak")
+#         # print("falak")
         course_name = request.POST.get('course_name')
         link = request.POST.get('link')
         tags = request.POST.get('tags')
@@ -355,7 +363,7 @@ def addexternalcourse(request):
             return render(request, "accounts/login.html")
 
         username = database.child("users").child(a).child("details").child("username").get(idtoken).val()
-        #print(username)
+#         #print(username)
         data = {
             "tags": tags,
             "link": link,
@@ -378,15 +386,15 @@ def external_course_list(request):
     except:
         return render(request, "accounts/login.html")
     courses = database.child('externalcourses').shallow().get(idtoken).val()
-    print(courses)
+#     # print(courses)
     list_courses = [*courses]
-    print(list_courses)
+#     # print(list_courses)
     link_lists = []
     
     for i in list_courses:
         link = database.child('externalcourses').child(i).child('link').get(idtoken).val()
         link_lists.append(link)
-    print(link_lists)
+#     # print(link_lists)
     combine_list = zip(list_courses,link_lists)
     return render(request, "home/externalcourses.html", {'combine_list':combine_list})        
 
@@ -403,19 +411,19 @@ def view_requests(request):
         return render(request, "accounts/signup.html")
 
     all_requests = database.child("requests").shallow().get().val()
-    print(all_requests)
+#     # print(all_requests)
     if all_requests is None:
         return render(request, "home/viewrequests.html", {'message': 'no requests'})
 
     all_requests_list = [*all_requests]
-    print(all_requests_list)
+#     # print(all_requests_list)
     my_requests = []
     username = database.child("users").child(a).child("details").child("username").get(idtoken).val()
-    print(username)
+#     # print(username)
     for i in all_requests_list:
         if username == database.child('requests').child(i).child('owner').get().val():
             my_requests.append(i)
-    print(my_requests)
+#     # print(my_requests)
 
 
     req_user = []
@@ -430,13 +438,12 @@ def view_requests(request):
         book_title1 = database.child('requests').child(i).child('book_title').get().val()
         book_title.append(book_title1)
         req_id.append(i)
-    print(req_user)
-    print(book_title)
+#     # print(req_user)
+#     # print(book_title)
     combine_list = zip(req_user,status,book_title,req_id)
     return render(request, "home/viewrequests.html", {'combine_list': combine_list, 'username':username})
 
 
-k = 0;
 @login_required
 def updatet(request,book_title,req_id,req_user,username):
 
@@ -449,11 +456,17 @@ def updatet(request,book_title,req_id,req_user,username):
     except:
         return render(request, "accounts/signup.html")
 
+    k = database.child('k').get().val()
+    if k is None:
+        database.child('k').set(0, idtoken)
+    k = database.child('k').get().val()
+    k = k + 1
+    database.child('k').set(k, idtoken)
+
     database.child("books").child(book_title).update({"status": 0})
     database.child("requests").child(req_id).remove()
     reply = str("Your approval for book ") + str(book_title) + str("is accepted by ") + str(username)
-    global k
-    k = k+1
+
     data = {
         "reply" : reply,
         "to" : req_user,
@@ -473,11 +486,16 @@ def updatef(request,book_title,req_id,req_user,username):
     except:
         return render(request, "accounts/signup.html")
 
+    k = database.child('k').get().val()
+    if k is None:
+        database.child('k').set(0, idtoken)
+    k = database.child('k').get().val()
+    k = k + 1
+    database.child('k').set(k, idtoken)
 
     database.child("requests").child(req_id).remove()
     reply = str("Your approval for book ") + str(book_title) + str("is declined by ") + str(username)
-    global k
-    k = k + 1
+
     data = {
         "reply": reply,
         "to": req_user,
@@ -498,21 +516,21 @@ def notifications(request):
         return render(request, "accounts/signup.html")
 
     all_reply = database.child("notifications").shallow().get().val()
-    print(all_reply)
+#     # print(all_reply)
     if all_reply is None:
         return render(request, "home/viewrequests.html", {'message': 'no requests'})
 
     all_reply_list = [*all_reply]
-    print(all_reply)
+#     # print(all_reply)
     my_reply = []
     n_id = []
     username = database.child("users").child(a).child("details").child("username").get(idtoken).val()
-    print(username)
+#     # print(username)
     for i in all_reply_list:
         if username == database.child('notifications').child(i).child('to').get().val():
             my_reply.append(i)
 
-    print(my_reply)
+#     # print(my_reply)
 
 
     users = []
@@ -533,7 +551,159 @@ def notifications(request):
 
     combine_list = zip(my_reply, users,n_id,mystr,mybooks)
     return render(request, "home/notifications.html", {'combine_list': combine_list})
+
 @login_required
 def n_delete(request,n_id):
     database.child("notifications").child(n_id).remove()
     return redirect("home:notifications")
+
+@login_required
+def allchat(request):
+    try:
+        idtoken = request.session['uid']
+        a = authe.get_account_info(idtoken)
+        a = a['users']
+        a = a[0]
+        a = a['localId']
+    except:
+        return render(request, "accounts/signup.html")
+    USER = database.child('users').shallow().get(idtoken).val()
+#     # print(USER)
+    list_user = [*USER]
+#     # print(list_user[0].details)
+    admins = []
+    branches = []
+    details = []
+    emails = []
+    usernames = []
+    years = []
+    ids = []
+    for i in list_user:
+        if a == i:
+            continue
+        ids.append(i)
+        admin = database.child('users').child(i).child('details').child('admin').get().val()
+        admins.append(admin)
+        branch = database.child('users').child(i).child('details').child('branch').get().val()
+        branches.append(branch)
+        # detail = database.child('users').child(i).child('details').child('detail').get().val()
+        # details.append(detail)
+        email = database.child('users').child(i).child('details').child('email').get().val()
+        emails.append(email)
+        username = database.child('users').child(i).child('details').child('username').get().val()
+        usernames.append(username)
+        year = database.child('users').child(i).child('details').child('year').get().val()
+        years.append(year)
+#     # print(usernames)
+    combine_user = zip(admins, branches,  emails,usernames,years,ids)
+    return render(request, "home/allchat.html", {'combine_user': combine_user,'selfid':a})
+
+
+
+@login_required
+def chatroom(request,self,other):
+    try:
+        idtoken = request.session['uid']
+        a = authe.get_account_info(idtoken)
+        a = a['users']
+        a = a[0]
+        a = a['localId']
+    except:
+        return render(request, "accounts/signup.html")
+
+    msgno = database.child('msgno').get().val()
+    if msgno is None:
+        database.child('msgno').set(0, idtoken)
+    msgno = database.child('msgno').get().val()
+    msgno = msgno+1
+    database.child('msgno').set(msgno, idtoken)
+
+#     # print(msgno)
+    if request.method == 'GET':
+
+#         # print(self)
+#         # print(other)
+        self1 = self
+        other1 = other
+        if self1>other1:
+            self1 = other
+            other1 = self
+
+
+
+        temp = database.child('Chatroom').child(self1+other1).shallow().get().val()
+        if temp is None:
+            data = {
+                "message": "Hey!! How you doing",
+                "to": "admin",
+                "from":"admin",
+            }
+            database.child('Chatroom').child(self1+other1).child(msgno).set(data, idtoken)
+        all_messages = database.child('Chatroom').child(self1+other1).shallow().get().val()
+#         # print(temp)
+#         # print(all_messages)
+        username1 = database.child("users").child(self).child("details").child("username").get(idtoken).val()
+        username2 = database.child("users").child(other).child("details").child("username").get(idtoken).val()
+        messages = []
+        tos = []
+        froms = []
+        inds = []
+        for i in all_messages:
+            inds.append(int(i))
+            message = database.child('Chatroom').child(self1 + other1).child(i).child('message').get().val()
+            messages.append(message)
+            to = database.child('Chatroom').child(self1 + other1).child(i).child('to').get().val()
+            tos.append(to)
+            fro = database.child('Chatroom').child(self1 + other1).child(i).child('from').get().val()
+            froms.append(fro)
+
+        combine_chat = zip(inds,messages, tos, froms)
+#         # print("final list - ", str(combine_chat))
+        combine_chat_ = sorted(list(zip(inds, messages, tos, froms)), key=operator.itemgetter(0))
+#         # print("final list - ", str(combine_chat_))
+        type(combine_chat)
+        type(combine_chat_)
+        # return redirect("home:notifications")
+        return render(request, "home/chat_room.html", {'combine_chat': combine_chat_,'selfid':a,'otherid':other,'u1':username1, 'u2':username2})
+
+    elif request.method == 'POST':
+#         # print(self)
+#         # print(other)
+        self1 = self
+        other1 = other
+        if self1>other1:
+            self1 = other
+            other1 = self
+        msg = request.POST.get('msg')
+        username1 = database.child("users").child(self).child("details").child("username").get(idtoken).val()
+        username2 = database.child("users").child(other).child("details").child("username").get(idtoken).val()
+        data = {
+            "message": msg,
+            "to": username2,
+            "from": username1,
+        }
+        msg = "ffn"
+        database.child('Chatroom').child(self1 + other1).child(msgno).set(data, idtoken)
+        all_messages = database.child('Chatroom').child(self1+other1).shallow().get().val()
+        messages = []
+        tos = []
+        froms = []
+        inds = []
+        for i in all_messages:
+            inds.append(int(i))
+            message = database.child('Chatroom').child(self1 + other1).child(i).child('message').get().val()
+            messages.append(message)
+            to = database.child('Chatroom').child(self1 + other1).child(i).child('to').get().val()
+            tos.append(to)
+            fro = database.child('Chatroom').child(self1 + other1).child(i).child('from').get().val()
+            froms.append(fro)
+#         # print(combine_chat)
+        #
+
+        combine_chat = zip(inds, messages, tos, froms)
+        # print("final list - ", str(combine_chat))
+        combine_chat_ = sorted(list(zip(inds, messages, tos, froms)), key=operator.itemgetter(0))
+        # print("final list - ", str(combine_chat_))
+
+        return render(request, "home/chat_room.html", {'combine_chat': combine_chat_,'selfid':a,'otherid':other, 'u1':username1, 'u2':username2})
+

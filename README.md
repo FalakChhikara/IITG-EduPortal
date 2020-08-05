@@ -9,6 +9,7 @@ git clone <name-of-the-repo>
 #install pyrebase
 
 sudo pip3 install pyrebase
+
 sudo pip3 install django-channels
 
 #Go to directory containing manage.py file

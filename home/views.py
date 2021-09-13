@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect
-import pyrebase
+from pyrebase import pyrebase
 from django.contrib import auth
 from functions import *
 from decorators import *
